@@ -1,48 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  _MyAppState createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  static const platform = MethodChannel('samples.flutter.dev/battery');
-
-  // Get battery level.
-  String _batteryLevel = 'Unknown battery level.';
+class _MyAppState extends State<MyApp> {
+  static const platform = MethodChannel('samples.flutter.dev/device');
+  String _batteryLevel = 'Unknown battery level';
+  String _signalStrength = 'Unknown signal strength';
 
   Future<void> _getBatteryLevel() async {
     String batteryLevel;
     try {
-      final result = await platform.invokeMethod<int>('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
+      final int result = await platform.invokeMethod('getBatteryLevel');
+      batteryLevel = 'Battery level: $result %';
     } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
+      batteryLevel = 'Failed to get battery level: ${e.message}';
     }
 
     setState(() {
@@ -50,19 +29,44 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _getSignalStrength() async {
+    String signalStrength;
+    try {
+      final String result = await platform.invokeMethod('getSignalStrength');
+      signalStrength = 'Signal strength: $result';
+    } on PlatformException catch (e) {
+      signalStrength = 'Failed to get signal strength: ${e.message}';
+    }
+
+    setState(() {
+      _signalStrength = signalStrength;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: _getBatteryLevel,
-              child: const Text('Get Battery Level'),
-            ),
-            Text(_batteryLevel),
-          ],
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Device Info'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(_batteryLevel),
+              ElevatedButton(
+                onPressed: _getBatteryLevel,
+                child: const Text('Get Battery Level'),
+              ),
+              const SizedBox(height: 20),
+              Text(_signalStrength),
+              ElevatedButton(
+                onPressed: _getSignalStrength,
+                child: const Text('Get Signal Strength'),
+              ),
+            ],
+          ),
         ),
       ),
     );
