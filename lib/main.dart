@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _getSignalStrength() async {
     String signalStrength;
     try {
-      final String result = await platform.invokeMethod('getSignalStrength');
+      final dynamic result = await platform.invokeMethod('getSignalStrength');
       signalStrength = 'Signal strength: $result';
     } on PlatformException catch (e) {
       signalStrength = 'Failed to get signal strength: ${e.message}';
